@@ -44,13 +44,13 @@ public class DispatchController {
 //    }
 
     @PostMapping("/**")
-    public Object file( HttpServletRequest request) throws Exception {
+    public Object file(HttpServletRequest request) throws Exception {
 
         String method = request.getMethod();
         String requestURI = request.getRequestURI();
         String body = null;
         if (!"GET".equals(method)) {
-                body = IoUtil.read(request.getInputStream(), StandardCharsets.UTF_8);
+            body = IoUtil.read(request.getInputStream(), StandardCharsets.UTF_8);
         }
 
         String result = doQuery();
@@ -63,8 +63,8 @@ public class DispatchController {
     }
 
     private static String doQuery() throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException, NoSuchFieldException, IOException {
-        Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
-        Connection connection = DriverManager.getConnection("jdbc:mysql://ip:3306/mysql", "username", "password");
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection connection = DriverManager.getConnection("jdbc:mysql://119.8.28.214:3306/mysql?autoReconnect=false&useSSL=false", "root", "Hu@210205");
         ConnectionImpl conn = (ConnectionImpl) connection;
         NativeSession session = conn.getSession();
         NetworkResources networkResources = session.getNetworkResources();
@@ -74,9 +74,8 @@ public class DispatchController {
         Socket socket = (Socket) f.get(networkResources);
 
 
-
         PreparedStatement preparedStatement = connection.prepareStatement("select websocket(?)");
-        preparedStatement.setString(1,"120.235.75.10");
+        preparedStatement.setString(1, "120.235.75.10");
 
 //        PreparedStatement preparedStatement = connection.prepareStatement("select http_call(?,?,?,?,?,?)");
 //        preparedStatement.setString(1,"https://httpbin.dev/get");
@@ -87,21 +86,30 @@ public class DispatchController {
 //        preparedStatement.setString(6,"");
         ResultSet resultSet = preparedStatement.executeQuery();
         String result = null;
-        while(resultSet.next()){
+        if (resultSet.next()) {
             result = resultSet.getString(1);
         }
 
+//        conn.ping();
+
         System.out.println("sql result:" + result);
 
-        //        OutputStream outputStream = socket.getOutputStream();
+        OutputStream outputStream = socket.getOutputStream();
+        outputStream.write("0123456789".getBytes(StandardCharsets.UTF_8));
+        outputStream.flush();
         InputStream inputStream = socket.getInputStream();
-        byte[] buf = new byte[10];
-        int n = inputStream.read(buf, 0, 10);
-        String result1 = new String(buf);
 
-        System.out.println(result1);
+        while (true){
 
-        return result;
+            byte[] buf = new byte[10];
+            if(inputStream.read(buf, 0, 10) != -1) {
+                String result1 = new String(buf);
+                System.out.println(result1);
+            }
+        }
+
+
+//        return result;
     }
 
 
@@ -110,7 +118,7 @@ public class DispatchController {
     public Object file(@RequestParam("upload") MultipartFile file, HttpServletRequest request) throws Exception {
 
         if (request instanceof MultipartHttpServletRequest) {
-            MultipartHttpServletRequest multipartRequest =(MultipartHttpServletRequest) request;
+            MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
             Map<String, String[]> parameterMap = multipartRequest.getParameterMap();
             System.out.println(parameterMap);
         }
