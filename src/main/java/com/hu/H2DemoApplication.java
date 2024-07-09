@@ -1,4 +1,4 @@
-package com.hu.h2_demo;
+package com.hu;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
